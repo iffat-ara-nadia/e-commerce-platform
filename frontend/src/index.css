@@ -1,0 +1,29 @@
+main {
+  /* need to be clear about min-height: 80vh; */
+  min-height: 80vh;
+}
+
+h2 {
+  color: #bf00ff;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+}
+
+h3 {
+  padding: 1rem 0;
+}
+
+.rating span {
+  margin: 0.1rem;
+}
+
+#username {
+  font-weight: bold;
+  text-transform: capitalize;
+  font-size: 1.1rem;
+  color: brown;
+}
+
+.thead {
+  background-color: BlueViolet;
+}
