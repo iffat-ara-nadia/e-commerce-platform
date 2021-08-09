@@ -4,14 +4,27 @@ import { useDispatch, useSelector } from "react-redux"
 import { Row, Col, Image, Button, ListGroup, Card } from 'react-bootstrap'
 import Loader from '../components/Loader'
 import Message from '../components/Message'
-import { getOrderDetails } from '../actions/orderActions';
+import { getOrderDetails, payOrder, deliverOrder } from '../actions/orderActions'
+import { ORDER_DELIVER_RESET, ORDER_PAY_RESET} from '../constants/orderConstants'
 
-const OrderScreen = ({ match }) => {
+
+const OrderScreen = ({ history, match }) => {
     const orderId = match.params.id
     const dispatch = useDispatch()
+
+    const userLogin = useSelector(state => state.userLogin)   ///WRONG: state(() => state.userLogin)
+    const { userInfo } = userLogin
     
     const orderDetails = useSelector(state=> state.orderDetails)
     const { order, loading, error } = orderDetails
+
+    //PROBLEM: Initially shows order details of previous user (to Admin user). After reloading the page, it shows the clicked user order details. 
+
+    const orderPay = useSelector(state => state.orderPay)
+    const { loading: loadingPay, success: successPay } = orderPay
+
+    const orderDeliver = useSelector(state => state.orderDeliver)
+    const { loading: loadingDeliver, success: successDeliver } = orderDeliver
 
  /*    useEffect(() => {
         dispatch(getOrderDetails(orderId))  
@@ -20,10 +33,29 @@ const OrderScreen = ({ match }) => {
     //Corrected version: 
   //???? /* In the OrderScreen useEffect(), check for the order and also make sure that the order ID matches the ID in the URL. If it does not, then dispatch getOrderDetails() to fetch the most recent order */
     useEffect(() => {
-        if(!order || order._id !== orderId) {
+       if(!userInfo)
+          history.pushState('/login')
+
+        //Basically RESET the screen 
+        if(!order || successPay || successDeliver) {
+            dispatch({ type: ORDER_PAY_RESET })
+            dispatch({ type: ORDER_DELIVER_RESET })
             dispatch(getOrderDetails(orderId))
         }
-    }, [order, orderId]) 
+    }, [dispatch, order, orderId, successPay, successDeliver]) //I MISSED 'dispatch' as dependency of useEffect.
+
+    const deliverHandler = () => {
+        dispatch(deliverOrder(order))
+    }
+
+    /* I wrote dispatch(ORDER_PAY_RESET)   dispatch(ORDER_DELIVER_RESET) INSTEAD OF 
+            dispatch({ type: ORDER_PAY_RESET })
+            dispatch({ type: ORDER_DELIVER_RESET }) SO I GOT:
+   Uncaught Error: Actions must be plain objects. Use custom middleware for async actions.
+    ▶ 32 stack frames were collapsed.
+    This screen is visible only in development. It will not appear if the app crashes in production.
+    Open your browser’s developer console to further inspect this error.  Click the 'X' or hit ESC to dismiss this message
+    */
 
   return ( 
     loading ? <Loader /> : error ? <Message variant="danger"> {error} </Message> :
@@ -40,14 +72,14 @@ const OrderScreen = ({ match }) => {
                     <p>
                     <strong>Email: </strong>
                     {/* what does mailto mean? any other way? */}
-                    <a href={`mailto: ${order.user.email}`}>{order.user.email}</a>
+                    <a href={`mailto: ${order.user.email}`}> {order.user.email} </a>
                     </p>
                     <p>
                         <strong>Address: </strong>
                         {order.shippingAddress.address},  {order.shippingAddress.city}{' '}
                         {order.shippingAddress.postalCode}, {order.shippingAddress.country}  
                     </p>
-                   {order.isDelivered ? <Message variant="success">Delivered on {order.deliveredAt}</Message> 
+                   {order.isDelivered ? <Message variant="success">Delivered on { order.deliveredAt.substring(0, 10)}</Message> 
                     : <Message variant="warning">Not Delivered</Message>}
                 </ListGroup.Item>
                 <ListGroup.Item>
@@ -114,6 +146,14 @@ const OrderScreen = ({ match }) => {
                         <Col>${Number(order.totalPrice).toFixed(2)}</Col>
                     </Row>
                 </ListGroup.Item>
+                {loadingDeliver && <Loader />}
+                {userInfo && userInfo.isAdmin && order.isPaid && !order.isDelivered && (
+                    <ListGroup.Item>
+                        <Button type="button" className="btn btn-block btn-info" 
+                        onClick = {deliverHandler}> Mark As Delivered </Button>
+                    </ListGroup.Item>
+
+                )}
 
             </ListGroup>
         </Col>

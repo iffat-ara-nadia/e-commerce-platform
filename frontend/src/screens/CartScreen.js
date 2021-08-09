@@ -62,7 +62,7 @@ const CartScreen = ({ match, location, history }) => {
                             <Form.Control 
                                 as="select" 
                                 value={item.qty}
-                                onChange={(e) => //BUG TO FIX: this isn't work properly TO CHANGE QTY.
+                                onChange={(e) => //BUG TO FIX: this doesn't work properly TO CHANGE QTY.
                                     dispatch(
                                         addToCart(item._id, Number(e.target.value)))}
                                 >

@@ -2,25 +2,34 @@ import { createStore, combineReducers, applyMiddleware } from "redux"
 import thunk from "redux-thunk"
 import jwtDecode from "jwt-decode"
 import { composeWithDevTools } from "redux-devtools-extension"
-import { productListReducer, productDetailsReducer} from "./reducers/productReducers"
+import { productListReducer, productDetailsReducer, productCreateReducer, productUpdateReducer, productDeleteReducer, productReviewCreateReducer, topRatedProductReducer} from "./reducers/productReducers"
 import { cartReducer } from "./reducers/cartReducers"
 import { userLoginReducer, userRegisterReducer, userDetailsReducer, 
-        userUpdateProfileReducer, userListReducer } from './reducers/userReducers'
-import { orderCreateReducer, orderDetailsReducer, orderPayReducer, myOrderListReducer } from './reducers/orderReducers'
+        userUpdateProfileReducer, userListReducer, userUpdateReducer, userDeleteReducer } from './reducers/userReducers'
+import { orderCreateReducer, orderDetailsReducer, orderPayReducer, orderDeliverReducer, myOrderListReducer, OrderListReducer } from './reducers/orderReducers'
 
 const reducer = combineReducers({
     productList: productListReducer, 
     productDetails: productDetailsReducer,
+    productCreate: productCreateReducer,
+    productUpdate: productUpdateReducer,
+    productDelete: productDeleteReducer,
+    productReviewCreate: productReviewCreateReducer, //my own writing: productReview: productCreateReviewReducer
+    topRatedProducts: topRatedProductReducer,
     cart: cartReducer,
     userLogin: userLoginReducer,
     userRegister: userRegisterReducer,
     userDetails: userDetailsReducer,
     userUpdateProfile: userUpdateProfileReducer,
     userList: userListReducer,
+    userUpdate: userUpdateReducer,
+    userDelete: userDeleteReducer,
     orderCreate: orderCreateReducer,
     orderDetails: orderDetailsReducer,
     orderPay: orderPayReducer,
-    myOrderList: myOrderListReducer
+    orderDeliver: orderDeliverReducer,
+    myOrderList: myOrderListReducer,
+    orderList: OrderListReducer
 })
 
 const cartItemsFromStorage = localStorage.getItem("cartItems") 

@@ -3,24 +3,35 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
 import { Table, Button } from 'react-bootstrap';
 import Message from "../components/Message";
-import { getUsers } from '../actions/userActions';
+import { getUsers, deleteUser } from '../actions/userActions';
 
-const UserListScreen = () => {
+const UserListScreen = ({ history }) => {
 
   const dispatch = useDispatch()
 
   const userList = useSelector(state=> state.userList)
-  console.log("userList" + userList)
+  //console.log("userList" + userList)
   const { users, error } = userList
-  console.log("userScreen users:" + users)
+  //console.log("userScreen users:" + users)
+
+  const userLogin = useSelector(state=> state.userLogin)
+  const { userInfo } = userLogin
+
+  const userDelete = useSelector(state=> state.userDelete)
+  const { success:successDelete } = userDelete
 
   useEffect(() => {
-      dispatch(getUsers())
-  }, [dispatch])
+      if(userInfo && userInfo.isAdmin) {
+          dispatch(getUsers())
+      } else {
+          history.push('/login') //why not '/' for redirecting to homepage.
+      }
+  }, [dispatch, history, userInfo, successDelete])
 
 
   const deleteHandler = (id) => {
-      console.log("delete user ")
+      if(window.confirm('Are you sure?')) //what else method?
+        dispatch(deleteUser(id))
   }
 
   return (
@@ -47,7 +58,7 @@ const UserListScreen = () => {
                          : (<i className="fas fa-times" style={{ color: "red"}}></i>)}</td>
                        
                         <td>
-                            <LinkContainer to={`/user/${user._id}/edit`}>
+                            <LinkContainer to={`/admin/user/${user._id}/edit`}>
                                 <Button variant="light" className="btn-sm mr-2">
                                     <i className="fas fa-edit"></i>
                                 </Button> 

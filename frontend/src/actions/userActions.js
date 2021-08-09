@@ -1,8 +1,8 @@
-import { USER_LOGIN_REQUEST, USER_LOGIN_SUCCESS, USER_LOGIN_FAIL, USER_LOGOUT, USER_UPDATE_PROFILE_SUCCESS, USER_DETAILS_RESET } from "../constants/userConstants"
+import { USER_LOGIN_REQUEST, USER_LOGIN_SUCCESS, USER_LOGIN_FAIL, USER_LOGOUT, USER_UPDATE_PROFILE_SUCCESS, USER_DETAILS_RESET, USER_DELETE_REQUEST, USER_DELETE_FAIL } from "../constants/userConstants"
 import { USER_REGISTER_REQUEST, USER_REGISTER_SUCCESS, USER_REGISTER_FAIL } from '../constants/userConstants';
 import { USER_DETAILS_REQUEST, USER_DETAILS_FAIL, USER_DETAILS_SUCCESS } from '../constants/userConstants';
 import { USER_UPDATE_PROFILE_FAIL, USER_UPDATE_PROFILE_REQUEST } from '../constants/userConstants';
-import { USER_LIST_SUCCESS, USER_LIST_FAIL, USER_LIST_REQUEST } from './../constants/userConstants';
+import { USER_LIST_SUCCESS, USER_LIST_FAIL, USER_LIST_REQUEST, USER_LIST_RESET, USER_DELETE_SUCCESS, USER_UPDATE_REQUEST, USER_UPDATE_FAIL, USER_UPDATE_SUCCESS } from './../constants/userConstants';
 import { MY_ORDER_LIST_RESET } from "../constants/orderConstants";
 import axios from "axios"
 
@@ -73,7 +73,7 @@ export const getUserDetails = () => async(dispatch) => {
          axios.defaults.headers.common["x-auth-token"] = localStorage.getItem("token") //this line: from Mosh
     
         const { data } = await axios.get('/api/profile')
-        console.log( data )
+        //console.log( data )
         
         dispatch({
             type: USER_DETAILS_SUCCESS,
@@ -142,6 +142,62 @@ export const getUsers = () => async(dispatch) => {
     }
 }
 
+//ERROR: UPDATE USER NOT WORKING PROPERY. continuous admin user info is provided in console.
+//userEditScreen "not filled up with selected user info" for edit.
+export const updateUser = (user) => async(dispatch) => {
+    try {
+        dispatch({
+            type: USER_UPDATE_REQUEST
+        })
+     
+        //headers.common: use to set token by default in all kinds of http request. 
+         axios.defaults.headers.common["x-auth-token"] = localStorage.getItem("token") //this line: from Mosh
+         
+         const { data } = await axios.put(`/api/profile/users/${user._id}`, user) //user._id because we passed in whole user object.
+        console.log(data)
+        dispatch({ type: USER_UPDATE_SUCCESS })
+
+        //This is kinda tricky:
+        //To pass the data of updated user into userDetails, we need to dispatch USER_DETAILS_SUCCESS.
+        dispatch({ 
+            type: USER_DETAILS_SUCCESS,
+            payload: data 
+        }) 
+
+     } catch (ex) { 
+        console.log(ex.response.data);
+        dispatch({
+            type: USER_UPDATE_FAIL,
+            payload: ex.response.data
+        })     
+    }
+}
+
+
+export const deleteUser = (id) => async(dispatch) => {
+    try {
+        dispatch({
+            type: USER_DELETE_REQUEST
+        })
+     
+        //headers.common: use to set token by default in all kinds of http request. 
+         axios.defaults.headers.common["x-auth-token"] = localStorage.getItem("token") //this line: from Mosh
+         
+         await axios.delete(`/api/profile/users/${id}`)
+        
+        dispatch({
+            type: USER_DELETE_SUCCESS
+        })
+
+     } catch (ex) { 
+        console.log(ex.response.data);
+        dispatch({
+            type: USER_DELETE_FAIL,
+            payload: ex.response.data
+        })     
+    }
+}
+
 
 export const logout = () => (dispatch) => {
     localStorage.removeItem("userInfo")
@@ -150,6 +206,7 @@ export const logout = () => (dispatch) => {
     dispatch({ type: USER_LOGOUT })
     dispatch({ type: USER_DETAILS_RESET })
     dispatch({ type: MY_ORDER_LIST_RESET })
+    dispatch({ type: USER_LIST_RESET })
 }
 
 //NEED TO BE SURE: is this function right?

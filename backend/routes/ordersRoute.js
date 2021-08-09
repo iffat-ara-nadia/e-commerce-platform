@@ -2,6 +2,7 @@ const _ = require("lodash")
 const { Order } = require("../models/orderModel")
 const { User } = require("../models/userModel")
 const auth = require("../middleware/auth")
+const admin = require("../middleware/admin")
 const mongoose = require ("mongoose")
 const express = require("express");
 const validateObjectId = require("../middleware/validateObjectId");
@@ -18,7 +19,14 @@ router.get("/myorders", auth, async(req, res) => {
   res.send(orders)
 }) 
 
-router.get("/:id", validateObjectId, async(req, res) => {
+//Get all orders by admin
+router.get("/", [auth, admin], async(req, res) => {
+  const orders = await Order.find().populate('user', '_id name')
+
+  res.send(orders)
+}) 
+
+router.get("/:id", [auth, validateObjectId], async(req, res) => {
   const order = await Order.findById(req.params.id).populate('user', 'name email')
 
   if(!order) return res.status(404).send("The order with the given ID was not found.")
@@ -27,8 +35,7 @@ router.get("/:id", validateObjectId, async(req, res) => {
 }) 
 
 
-
-//POST ORDER:
+//POST ORDER by user:
 router.post("/", auth, async(req, res) => {
   /* 
   const{ error } = validate(req.body);
@@ -49,7 +56,7 @@ router.post("/", auth, async(req, res) => {
    
    const order = new Order({
      orderItems, 
-     user: userId,
+     user: userId, // How to embed multiple info about the user??
      shippingAddress,
      paymentMethod, 
      itemsPrice, 
@@ -64,8 +71,21 @@ router.post("/", auth, async(req, res) => {
     
   })
 
+  //UPDATED ORDER by admin
+  router.put("/:id/deliver", [auth, validateObjectId], async(req, res) => {
+    const order = await Order.findById(req.params.id)
+    
+    if(!order) return res.status(404).send("The order with the given ID was not found.")
   
-  //UPDATE ORDER
+    order.isDelivered = true,
+    order.deliveredAt = Date.now(),
+   
+  
+    await order.save()
+    res.send(order)
+  }) 
+  
+  //UPDATED ORDER by user
   router.put("/:id/pay", [auth, validateObjectId], async(req, res) => {
     const order = await Order.findById(req.params.id)
     

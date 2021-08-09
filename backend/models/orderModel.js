@@ -91,4 +91,6 @@ const orderSchema = mongoose.Schema({
 
 const Order = mongoose.model("Order", orderSchema) //i wrote: Model
 
+//SHOULD I NEED TO VALIDATE ALL PROPERTIES OF A LARGE MODEL USING JOI????
+
 exports.Order = Order
