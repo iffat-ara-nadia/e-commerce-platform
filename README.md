@@ -45,9 +45,9 @@ If there is a .git folder already there we wnat to get rid of that .git reposito
 
  **Bootstrap**
 
-        npm i bootstrap
+    npm i bootstrap
 
-    _import 'bootstrap/dist/css/bootstrap.css' in index.js file_
+    import 'bootstrap/dist/css/bootstrap.css' in index.js file
 
 For using Bootstrap framework:
     Bootswatch is a free theme for Bootstrap and Bootswatch is a customized Bootstrap files. Download prefered theme.
@@ -121,7 +121,7 @@ Then have to wrap **App** component with **BrowserRouter**
     </BrowserRouter>
 
 **BrowserRouter** grabs _history_ object in browsers and passes it down to component tree. So, anywhere in our component tree will be able to use the _history_ object.
-
+    
 In _App.js_ file
 
     import { Route } from 'react-router-dom';
@@ -132,11 +132,14 @@ In _App.js_ file
 
 - For exact path we should use _exact_ keyword like this :
 
-        <Route path="/" exact component={Home}>
+        <Route path="/" exact component={Home} />
 
 - We can also use 'Switch' component for getting exact path 
 
         import { Switch } from'react-router-dom';
+
+    - **Shortcut**
+        Route[path] [component]*4 (then press tab)
 
 And wrap all Routes inside Switch component. **Switch** will render the first child that matches the location. With **Switch** we no longer need to use **exact**
 
@@ -146,11 +149,12 @@ And wrap all Routes inside Switch component. **Switch** will render the first ch
             <Route />
         </Switch>
 
-When using the **Switch** component we should order the routes from the most specific ones to the most generic ones.
+When using the **Switch** component we should **order the routes from the most specific ones to the most generic ones.**
 
 - **Link** component from **React Router**: For single page application. We don't have to download entire bundle and html page every time we navigates from one page to another.
 
-  Using **Link** we can only updates the URL and we will get new content in the DOM. Because **Link** component prevents the default behaviour of anchor tag's handler function. 
+  Using **Link** we can only updates the URL and we will get new content in the DOM. Because **Link** component prevents the default behaviour of anchor tag's (reloading) handler function. 
+
         import { Link } from 'react-router-dom';
 
 ```javascript
@@ -165,8 +169,16 @@ const Navbar = () => {
     )
 }
 
-In the to attribute specify the target path.
 ```
+
+In the **to** attribute specify the target path.
+
+- **NavLink** component
+
+    When we use **NavLink**, we can automatically applies **active class to the currently selected link**.
+
+        import { NavLink } from 'react-router-dom'
+
 
 **OR** 
 
@@ -175,7 +187,8 @@ We can use **LinkContainer**
     import { LinkContainer } from 'react-router-bootstrap';
 
     <LinkContainer to="/">
-    <Navbar.Brand> Proshop </Navbar.Brand>
+    
+        <Navbar.Brand> Proshop </Navbar.Brand>
 
     </LinkContainer>
 
@@ -186,7 +199,7 @@ We can use **LinkContainer**
 
             <Route path="products" render={(props) => <Products sortBy="newest" {...props}} />
 
-            With _props_ React will automatically inject default props **history**, **match**, **location** to this Component.
+    With _props_ React will automatically inject default props **history**, **match**, **location** to this Component.
 
 - **Route Parameter**
 
@@ -242,7 +255,7 @@ _localhost:3000/posts?sortBy=newest&approved=true_
     
     }
      
-To working with **Query Strings** there is a very popular npm package 
+To be working with **Query Strings** there is a very popular npm package 
 
 - Install
 
@@ -263,9 +276,100 @@ const Posts = ({ match, location }) => {
 ```
 Values of the output are always strings. So, if we want to work with numbers or booleans we need to parse them accordingly.
 
+- **Redirects**
+
+We want to redirect the user to a different URL like **/not-found** when we go to an invalid route.
+
+    import { Redirect } from 'react-router-dom';
+
+We want to display:
+```javascript
+    <Route path="/products" component={Products} />
+    <Route path="not-found" component={NotFound} />
+    <Route path="/" exact component={Home} />
+    <Redirect from="/" exact to="/products" />
+    <Redirect to="/not-found" /> [this can be applied to any other URLs]
+```
 
 
+If we type an invalid URL, we get automatically redirected to /not-found and we get NotFound component.
 
+Sometimes we want to move resources from one URL to another one. We can use **Redirect** component to achieve this.
+
+    <Redirect from="/messages" to="/posts" />
+
+If the **current** URL we type in the browser, matches the ("from") we can automatically get redirected ("to")
+
+- **Programatic Navigation**
+
+When we click a button or submit a form.
+
+**history** object has useful methods for navigation.
+
+- **push()*****(mostly used)
+    
+    - This _push()_ method add a new address in the browser's **history** object. So, we can use the back button and see where we were.
+    
+    ```javascript
+    const PaymentScreen = ({ history }) => {
+        const submitHandler = (e) => {
+        e.preventDefault()
+
+       dispatch(savePaymentMethod(paymentMethod))
+       history.push("/placeorder")
+    }
+    ```
+    
+- **replace()**
+
+    - _replace()_ basically replace the current address. So we won't have history and go back to the previous page.
+    - This method is often used in _login_ pages. So, when the user logs in and goes to a new page, if that person click the back button, we don't want to take him/her back to the _login_ page.
+
+- **Nested Routing**
+    - **Route Component**
+<Route /> is just like another componet. We can use **Route** component anywhere in our application not just in _App.js_ file.
+
+```const Dashboard = ({ match }) => {
+    return (
+     <div>
+        <h1> Admin Dashboard </h1>
+        <Sidebar />
+        <Route path="/admin/users" component={User} />
+     </div>
+    )
+}
+```
+
+## Fetching Data ##
+- **Axios**
+
+    **Axios** is a _http_ library that we use it to make a _http_ request to our backend.
+    
+    - **Install**
+
+            npm i axios
+
+    - How to use with **React Hooks**
+```javascript
+  import React, { useState, useEffect } from 'react';
+  import axios from "axios";
+
+  const HomeScreen = () => {
+      const [products, setProducts] = useState([]) //to initialize state "useState"
+
+      useEffect(() => {
+          const fetchProducts = async () => {
+            const { data } = await axios.get('/api/products')
+            
+            setProducts(data); //to change piece of state.
+
+          }
+
+          fetchProducts()
+      }, []) //as a second argument to useEffect we pass array of dependencies, anything to fire useEffect() off when it changes.
+  }
+
+```
 
 
 **Some Covension**
@@ -273,3 +377,87 @@ Values of the output are always strings. So, if we want to work with numbers or 
 For default export, we don't need curly braces around it when importing.
 
     import Counter from './components/counter'
+
+# Redux #
+
+Install **Redux Dev Tools** in browser which is highly recommended by developers. This gives us overall pictures of **Redux Store** with all of our state. Any state changes from component to component.
+
+It is mandatory to use **redux dev tools** if we want to work with **redux**.
+
+## Install Redux ##
+
+We have to install redux on frontend not on server.
+
+    npm i redux  react-redux  redux-thunk  redux-devtools-extension
+
+## Steps to use Redux ##
+
+First step is to create redux **store.js** file directly in the **source folder**
+
+- **Import**
+
+        import { createStore, combineReducers, applyMiddleware } from 'redux';
+        import thunk from 'redux-thunk'
+        import { composeWithDevTools } from 'redux-devtools-extension
+
+        const reducer = combineReducers({})
+
+        const initialState = {}
+
+        const middleware = [ thunk ]
+
+        const store = createStore(reducer, initialState,          composeWithDevTools(applyMiddleware(...middleware)))
+
+- **Notes**
+
+    - **redux** is state management library.
+    It is commonly used with react. 
+
+    - To work react and redux together we use package **react-redux**
+
+    - **redux-thunk** is a piece of middleware and basically allows us in our action creators to make **_asynchronous_** request. Because we have to talk to our server from those action creators.
+
+    - **redux-devtools-extension** because _redux-dev-tools_ doesn't work by default
+
+- **Provider**
+
+    The way we actually implement **store** into our application is through a **Provider**. And that provider comes from **react-redux** .
+
+    - In our _index.js_ file : 
+    
+            import { Provider } from 'react-redux'
+
+    - We also want to bring the **store** in because that has to be passed into the **provider**.
+
+            import store from './store';
+
+```javascript
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+)
+```
+
+- **Reducer**
+
+Create a folder called _reducers_ and basically each resource of our application will have a reducer file such as **products**.
+
+Inside **reducers** folder we gonna create a file **productReducers**. It's gonna be plural, because we gonna have bunch of different reducer functions in here but they all gonna related to products.
+
+A **reducer** takes in 2 things: **initial state** and **action**
+
+    export const productReducer = (state = { products: []}, action) => {
+        switch (action.type) {
+            case 'A':
+                return { products: [] }
+            case 'B' :
+                return { products: action.payload }
+            case 'C' :
+                return { error: action.payload }
+            default:
+                return state
+        }
+
+    }

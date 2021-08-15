@@ -7,8 +7,8 @@ const morgan = require("morgan")
 const dotenv = require("dotenv")
 const colors = require("colors")
 const connectDB = require("./config/db")
-const productsRoute = require("./routes/productsRoute") 
-const register = require("./routes/usersRoute") 
+const productsRoute = require("./routes/productsRoute")
+const register = require("./routes/usersRoute")
 const login = require("./routes/auth");
 const profile = require("./routes/profileRoute")
 const orders = require("./routes/ordersRoute")
@@ -30,7 +30,7 @@ const app = express()
 dotenv.config()
 connectDB();
 
-if (app.get('env') === 'development'){
+if (app.get('env') === 'development') {
     app.use(morgan('dev'))
 }
 
@@ -50,9 +50,12 @@ app.use("/api/upload", uploads)
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')))
 
 const port = process.env.PORT || 5000
+console.log("testing: ", port);
 const server = app.listen(port, () => {
     console.log(`server is running on PORT ${port}...`.yellow.bold)
 })
 
 
 module.exports = server
+
+//MONGO_URI = mongodb+srv://costco123:costco123@projects.hveiu.mongodb.net/proshop?retryWrites=true&w=majority
